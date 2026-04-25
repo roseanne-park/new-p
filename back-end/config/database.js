@@ -1,16 +1,12 @@
-// ============================================================================
-// MODUL: KONEKSI BASIS DATA (J.620100.021.02)
-// File: config/database.js
-// ============================================================================
-
 const { Pool } = require('pg');
-
 /**
  * Kelas Database merepresentasikan koneksi ke PostgreSQL.
  * Menggunakan prinsip Singleton agar tidak terjadi koneksi ganda.
+ * 
+ * 
  * @parameter {Pool} pool - Instance Pool untuk koneksi database
  * @method query - Menjalankan query SQL dengan parameter
- * @event error - Menangani error koneksi database (Debugging - J.620100.025.02)
+ * @event error - Menangani error koneksi database Debugging
  */
 class Database {
     constructor() {
@@ -18,15 +14,18 @@ class Database {
         this.pool = new Pool({
             user: 'postgres',
             password: '290922',
-            host: '127.0.0.1', // Jika error, coba ganti jadi 'localhost' atau '127.0.0.1'
-            port: 5431,
-            database: 'showroom_db'
+            host: '127.0.0.1',
+            port: 5431,      
+            database: 'philips' 
         });
 
-        // Event listener untuk memantau error pada koneksi (Debugging - J.620100.025.02)
+        // Event listener untuk memantau error pada koneksi database
         this.pool.on('error', (err) => {
-            console.error('Terjadi kesalahan pada koneksi basis data:', err.message);
+            console.error('❌ Terjadi kesalahan pada koneksi basis data:', err.message);
         });
+
+        // Success message
+        console.log('✅ Database Pool initialized for PHILIPS ELECTRONICS STORE');
     }
 
     /**
@@ -36,7 +35,26 @@ class Database {
      * @returns {Promise<Object>} Hasil query database
      */
     async query(text, params) {
-        return await this.pool.query(text, params);
+        try {
+            const result = await this.pool.query(text, params);
+            return result;
+        } catch (error) {
+            console.error('❌ Query Error:', error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Menutup koneksi database pool
+     * Digunakan saat aplikasi shutdown
+     */
+    async closePool() {
+        try {
+            await this.pool.end();
+            console.log('✅ Database pool closed successfully');
+        } catch (error) {
+            console.error('❌ Error closing pool:', error.message);
+        }
     }
 }
 
